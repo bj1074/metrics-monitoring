@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
-label: prometheus-ha
+labels: prometheus-ha
 
 image:
   repository: nginx
