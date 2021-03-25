@@ -135,7 +135,7 @@ data:
         rules:
         - alert: Deployment at 0 Replicas
           annotations:
-            summary: Deployment {{Values.label.deployment}} in {{Values.label.namespace}} is currently having no pods running
+            summary: Deployment {{.Values.label.deployment}} in {{.Values.label.namespace}} is currently having no pods running
           expr: |
             sum(kube_deployment_status_replicas{pod_template_hash=""}) by (deployment,namespace)  &lt; 1
           for: 1m
