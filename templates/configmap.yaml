@@ -144,7 +144,7 @@ data:
 
         - alert: HPA Scaling Limited  
           annotations: 
-            summary: HPA named {{$labels.hpa}} in {{$labels.namespace}} namespace has reached scaling limited state
+            summary: HPA named {{.Values.label.hpa}} in {{.Values.label.namespace}} namespace has reached scaling limited state
           expr: | 
             (sum(kube_hpa_status_condition{condition="ScalingLimited",status="true"}) by (hpa,namespace)) == 1
           for: 1m
@@ -153,7 +153,7 @@ data:
 
         - alert: HPA at MaxCapacity 
           annotations: 
-            summary: HPA named {{$labels.hpa}} in {{$labels.namespace}} namespace is running at Max Capacity
+            summary: HPA named {{.Values.label.hpa}} in {{.Values.label.namespace}} namespace is running at Max Capacity
           expr: | 
             ((sum(kube_hpa_spec_max_replicas) by (hpa,namespace)) - (sum(kube_hpa_status_current_replicas) by (hpa,namespace))) == 0
           for: 1m
@@ -164,7 +164,7 @@ data:
         rules:
         - alert: Container restarted
           annotations:
-            summary: Container named {{$labels.container}} in {{$labels.pod}} in {{$labels.namespace}} was restarted
+            summary: Container named {{.Values.label.container}} in {{.Values.label.pod}} in {{.Values.label.namespace}} was restarted
           expr: |
             sum(increase(kube_pod_container_status_restarts_total{namespace!="kube-system",pod_template_hash=""}[1m])) by (pod,namespace,container) &gt; 0
           for: 0m
@@ -173,7 +173,7 @@ data:
 
         - alert: High Memory Usage of Container 
           annotations: 
-            summary: Container named {{$labels.container}} in {{$labels.pod}} in {{$labels.namespace}} is using more than 75% of Memory Limit
+            summary: Container named {{.Values.label.container}} in {{.Values.label.pod}} in {{.Values.label.namespace}} is using more than 75% of Memory Limit
           expr: | 
             ((( sum(container_memory_usage_bytes{image!="",container_name!="POD", namespace!="kube-system"}) by (namespace,container_name,pod_name)  / sum(container_spec_memory_limit_bytes{image!="",container_name!="POD",namespace!="kube-system"}) by (namespace,container_name,pod_name) ) * 100 ) &lt; +Inf ) &gt; 75
           for: 5m
@@ -182,7 +182,7 @@ data:
 
         - alert: High CPU Usage of Container 
           annotations: 
-            summary: Container named {{$labels.container}} in {{$labels.pod}} in {{$labels.namespace}} is using more than 75% of CPU Limit
+            summary: Container named {{.Values.label.container}} in {{.Values.label.pod}} in {{.Values.label.namespace}} is using more than 75% of CPU Limit
           expr: | 
             ((sum(irate(container_cpu_usage_seconds_total{image!="",container_name!="POD", namespace!="kube-system"}[30s])) by (namespace,container_name,pod_name) / sum(container_spec_cpu_quota{image!="",container_name!="POD", namespace!="kube-system"} / container_spec_cpu_period{image!="",container_name!="POD", namespace!="kube-system"}) by (namespace,container_name,pod_name) ) * 100)  &gt; 75
           for: 5m
@@ -193,7 +193,7 @@ data:
         rules:
         - alert: High Node Memory Usage
           annotations:
-            summary: Node {{$labels.kubernetes_io_hostname}} has more than 80% memory used. Plan Capcity
+            summary: Node {{.Values.label.kubernetes_io_hostname}} has more than 80% memory used. Plan Capcity
           expr: |
             (sum (container_memory_working_set_bytes{id="/",container_name!="POD"}) by (kubernetes_io_hostname) / sum (machine_memory_bytes{}) by (kubernetes_io_hostname) * 100) &gt; 80
           for: 5m
@@ -202,7 +202,7 @@ data:
 
         - alert: High Node CPU Usage
           annotations:
-            summary: Node {{$labels.kubernetes_io_hostname}} has more than 80% allocatable cpu used. Plan Capacity.
+            summary: Node {{.Values.label.kubernetes_io_hostname}} has more than 80% allocatable cpu used. Plan Capacity.
           expr: |
             (sum(rate(container_cpu_usage_seconds_total{id="/", container_name!="POD"}[1m])) by (kubernetes_io_hostname) / sum(machine_cpu_cores) by (kubernetes_io_hostname)  * 100) &gt; 80
           for: 5m
@@ -211,7 +211,7 @@ data:
 
         - alert: High Node Disk Usage
           annotations:
-            summary: Node {{$labels.kubernetes_io_hostname}} has more than 85% disk used. Plan Capacity.
+            summary: Node {{.Values.label.kubernetes_io_hostname}} has more than 85% disk used. Plan Capacity.
           expr: |
             (sum(container_fs_usage_bytes{device=~"^/dev/[sv]d[a-z][1-9]$",id="/",container_name!="POD"}) by (kubernetes_io_hostname) / sum(container_fs_limit_bytes{container_name!="POD",device=~"^/dev/[sv]d[a-z][1-9]$",id="/"}) by (kubernetes_io_hostname)) * 100 &gt; 85
           for: 5m
