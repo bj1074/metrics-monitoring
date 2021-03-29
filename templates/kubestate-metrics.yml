@@ -100,6 +100,7 @@ spec:
     metadata:
       labels:
         k8s-app: kube-state-metrics
+        app.kubernetes.io/managed-by: Helm
     spec:
       serviceAccountName: kube-state-metrics
       containers:
@@ -150,7 +151,7 @@ metadata:
   name: kube-state-metrics
   labels:
     k8s-app: kube-state-metrics
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/managed-by: Helm
   annotations:
     prometheus.io/scrape: 'true'
     prometheus.io/port: "8080"
