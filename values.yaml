@@ -3,7 +3,13 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
-label: prometheus-ha
+label:
+  deployment: kube-state-metrics
+  namespace: monitoring
+  hpa: hpa
+  container: container
+  pod: pod
+  kubernetes_io_hostname: hostname
 
 image:
   repository: nginx
