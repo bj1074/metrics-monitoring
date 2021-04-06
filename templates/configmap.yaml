@@ -8,8 +8,8 @@ metadata:
 data:
   prometheus.yaml.tmpl: |-
     global:
-      scrape_interval: 10s
-      evaluation_interval: 10s
+      scrape_interval: {{ .Values.scrape_interval }}
+      evaluation_interval: {{ .Values.evaluation_interval }}
       external_labels:
         cluster: prometheus-ha
         # Each Prometheus has to have unique labels.
@@ -33,14 +33,14 @@ data:
         #- targets: ['localhost:9090']
 
     - job_name: 'node-exporter'
-      scrape_interval: 10s
+      scrape_interval: {{ .Values.scrape_interval }}
       static_configs:
         - targets: ['localhost:9100']
 
 
     - job_name: kubernetes-nodes-cadvisor
-      scrape_interval: 10s
-      scrape_timeout: 10s
+      scrape_interval: {{ .Values.scarpe_interval }}
+      scrape_timeout: {{ .Values.scrape_timeout }}
       scheme: https
       tls_config:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
@@ -136,78 +136,4 @@ data:
           target_label: __address__
           regex: (.+)(?::\d+);(\d+)
           replacement: $1:$2 
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: prometheus-rules
-  labels:
-    name: prometheus-rules
-  namespace: monitoring
-data:
-  alert-rules.yaml: |-
-    groups:
-    - name: custom_rules
-      rules:
-        - record: node_memory_MemFree_percent
-          expr: 100 - (100 * node_memory_MemFree_bytes / node_memory_MemTotal_bytes)
-        - record: node_filesystem_free_percent
-          expr: 100 * node_filesystem_free_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}
-    - name: alert_rules
-      rules:
-      - alert: service_down
-        expr: up == 0
-        for: 10s
-        labels:
-          severity: critical
-          service: Platform
-          correlate: service_down
-        annotations: 
-          summary: "Instance [{{ $labels.instance }}] down"
-          value: DOWN ({{ $value }})
-          description: "[{{ $labels.instance }}] of job [{{ $labels.job }}] has been down for more than 1 minute."
-      
-      - alert: APIHighInvocationRate
-        expr: sum(rate(gateway_function_invocation_total{code="200"}[2s])) BY (function_name) > 0
-        for: 5s
-        labels:
-          service: gateway
-          severity: major
-        annotations:
-          description: High invocation total on {{ $labels.function_name }}
-          summary: High invocation total on {{ $labels.function_name }}
-  
-      - alert: PrometheusAllTargetsMissing
-        expr: count by (job) (up) == 0
-        for: 0m
-        labels:
-          severity: critical
-        annotations:
-          summary: Prometheus all targets missing (instance {{ $labels.instance }})
-          description: A Prometheus job does not have living target anymore{{ $value }} {{ $labels }}
-      
-      - alert: PrometheusTooManyRestarts
-        expr: changes(process_start_time_seconds{job=~"prometheus|pushgateway|alertmanager"}[2s]) > 0
-        for: 0m
-        labels:
-          severity: warning
-        annotations:
-          summary: Prometheus too many restarts (instance {{ $labels.instance }})
-          description: Prometheus has restarted more than twice in the last 15 minutes. It might be crashlooping. {{ $value }} {{ $labels }} 
-      - alert: HostOutOfMemory
-        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 60
-        for: 1m
-        labels:
-          severity: warning
-        annotations:
-          summary: Host out of memory (instance {{ $labels.instance }})
-          description: Node memory is filling up (< 10% left){{ $value }} {{ $labels }} 
-     
-      - alert: HostOutOfDiskSpace
-        expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 1 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
-        for: 2m
-        labels:
-          severity: warning
-        annotations:
-          summary: Host out of disk space (instance {{ $labels.instance }})
-          description: Disk is almost full (< 10% left){{ $value }} {{ $labels }}
+
