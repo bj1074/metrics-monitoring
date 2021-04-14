@@ -6,7 +6,7 @@ metadata:
   annotations: 
     prometheus.io/scrape: "true"
     prometheus.io/port: "9090"
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
   labels:
     name: prometheus
 spec:
@@ -24,7 +24,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: thanos-store-gateway
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
 spec:
   type: ClusterIP
   clusterIP: None
@@ -41,7 +41,7 @@ metadata:
   labels:
     app: prometheus-api-grpc
   name: prometheus-api-grpc
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
 spec:
   selector:
     statefulset.kubernetes.io/pod-name: prometheus-0
@@ -60,7 +60,7 @@ metadata:
   labels:
     app: prometheus-api-store
   name: prometheus-api-store
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
 spec:
   selector:
     statefulset.kubernetes.io/pod-name: prometheus-0

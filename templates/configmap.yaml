@@ -4,14 +4,14 @@ metadata:
   name: prometheus-server-conf
   labels:
     name: prometheus-server-conf
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
 data:
   prometheus.yaml.tmpl: |-
     global:
       scrape_interval: {{ .Values.scrape_interval }}
       evaluation_interval: {{ .Values.evaluation_interval }}
       external_labels:
-        cluster: prometheus-ha
+        cluster: {{ .Values.clustername }}
         # Each Prometheus has to have unique labels.
         replica: $(POD_NAME)
 
@@ -35,7 +35,7 @@ data:
     - job_name: 'node-exporter'
       scrape_interval: {{ .Values.scrape_interval }}
       static_configs:
-        - targets: ['localhost:9100']
+        - targets: {{ .Values.nodeexporter.targets }}
 
 
     - job_name: kubernetes-nodes-cadvisor
@@ -104,7 +104,7 @@ data:
       metrics_path: /metrics
       scheme: http
       static_configs:
-        - targets: ['localhost:8080']
+        - targets: {{ .Values.kubestatemetrics.targets }}
       metric_relabel_configs:
         - target_label: cluster
      

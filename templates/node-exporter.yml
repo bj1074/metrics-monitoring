@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: node-exporter
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
   labels:
     app: node-exporter
 spec:
@@ -22,7 +22,7 @@ spec:
       hostNetwork: true
       containers:
         - name: node-exporter
-          image:  quay.io/prometheus/node-exporter:latest
+          image:  {{ .Values.nodeexporter.image }}
           securityContext:
             privileged: true
           args:
@@ -33,11 +33,11 @@ spec:
               protocol: TCP
           resources:
             limits:
-              cpu: 100m
-              memory: 100Mi
+              cpu: {{ .Values.nodeexporter.resources.limits.cpu }}
+              memory: {{ .Values.nodeexporter.resources.limits.memory }}
             requests:
-              cpu: 10m
-              memory: 100Mi
+              cpu: {{ .Values.nodeexporter.resources.requests.cpu }}
+              memory: {{ .Values.nodeexporter.resources.requests.memory }}
           volumeMounts:
             - name: dev
               mountPath: /host/dev
@@ -72,7 +72,7 @@ metadata:
   labels:
     name: node-exporter-api
   name: node-exporter-api
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
 spec:
   selector:
     app: node-exporter

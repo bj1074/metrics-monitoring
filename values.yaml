@@ -1,9 +1,40 @@
 # Default values for metrics-monitoring.
-
-label:
-  deployment: kube-state-metrics
-  namespace: monitoring
-  hpa: hpa
-  container: container
-  pod: pod
-  kubernetes_io_hostname: hostname
+scrape_interval: 10s
+evaluation_interval: 10s
+scrape_timeout: 10s
+namespace: monitoring
+clsutername: clustername
+nodeexporter:
+  targets: ['localhost:9100']
+  image: quay.io/prometheus/node-exporter:latest
+  resources:
+    limits:
+      cpu: 100m
+      memory: 100Mi
+    requests:
+      cpu: 10m
+      memory: 100Mi
+kubestatemetrics:
+  targets: ['localhost:8080']
+  image: quay.io/mxinden/kube-state-metrics:v1.4.0-gzip.3
+  addonresizer:
+    image: k8s.gcr.io/addon-resizer:1.8.3
+  resources:
+    limits:
+      cpu: 150m
+      memory: 50Mi
+    requests:
+      cpu: 150m
+      memory: 50Mi
+storageclass:
+  name: manual
+  capacity: 20Gi
+  hostpath: "/home/airvana/deeraj/"
+  resources:
+    requests:
+      storage: 3Gi
+statefulset:
+  prometheus:
+    image: prom/prometheus:v2.4.3
+  thanos:
+    image: quay.io/thanos/thanos:v0.8.0
